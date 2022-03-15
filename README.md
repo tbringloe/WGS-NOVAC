@@ -13,7 +13,7 @@ __Contact:__      e-mail: trevor.bringloe@unimelb.edu.au | tel: (506)-259-2288
 - [Summary](#summary)
 - [Status](#status)
 - [Contents](#contents)
-  + [Subsections within contents](#subsections-within-contents)
+  + [Provided files](#subsections-within-contents)
 - [Methods](#methods)
   + [Subsections within methods](#subsections-within-methods)
 - [Requirements](#requirements)
