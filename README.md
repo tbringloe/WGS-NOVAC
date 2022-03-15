@@ -42,7 +42,7 @@ The workflow is currently contained in a slurm script, which is specific to quei
 
 Several directories are also provided. The script should be run from the root folder. The R scripts leverage the "Here" package, which swaps in your system file paths so as to avoid hang ups on novel systems. The various folder pathways have various purposes, such as store workflow scripts, hold temporary folders, final output for various analyses, ect. Details are provided below.
 
-### Subsections within contents
+### Provided files
 IDX/-index folder for the reference genome, used by bowtie2 for mapping reads.
 
 NOVOPlasty/ - contains subfolders and NOVOPlasty perl script that assemble organellar genomes (not my script, see dependencies below). The main workflow script will create new subfolders within the relevant folder stream (mito or plastid) to store input and output files for individual sample assemblies.
