@@ -36,7 +36,7 @@ The age of DNA barcoding has transformed the field of biology, revealing remarka
 
 
 ## Status
-**In-development**; once the basic workflow is working, projected enhancements will include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; improvements to analyses, circumventing caveats of VCF; create a read mapping stream to call organellar variant positions, to potentially circumvent assembly issues.
+**In-development**; once the basic workflow is working, projected enhancements will include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; improvements to analyses, circumventing caveats of VCF; create a read mapping stream to call organellar variant positions, to potentially circumvent assembly issues; stream for long read data input; incorporate LDdecay plots to inform plink parameter decisions.
 
 
 ## Contents
@@ -124,13 +124,20 @@ Once the user is happy with these choices, the slurm script must be submitted to
 sbatch WGS_NOVAC_14iii22.slurm
 ```
 
-The workflow, in terms of the methods leveraged, are described here. For further details on methodology and benchmarking of the specific programs used, see respective citations, which include links to GitHub pages.
+The workflow, in terms of the methods leveraged, are described here. For further details on methodology and benchmarking of the specific programs used, see [References](#references), which include links to GitHub/webpages.
 ### Raw read QC and organellar assembly
 The pipeline starts by performing fastqc/multiqc on the raw read files. The files are then trimmed according to user specified criteria. Fastqc and multiqc are performed again on the trimmed reads, and should be checked over and compared to the raw QC output. Once the reads are trimmed, the workflow will move onto organellar assembly using NOVOPlasty (Dierckxsens et al. 2017), which extends a provided seed sequence based on coverage (i.e. high frequency kmers are used to extend the seed), until the assembled genome begins to overlap, confirming circularity. Seperate folders and configuration files are create for each sample. Carefully check over the final contig(s), if the assembly is not complete, this can potentially be improved two ways: 1) specify more reads to subsample for organellar assembly (improving coverage), or 2) specify a higher Kmer value, which may help bridge breaks in the assembly (you might have to increase the number of subreads as this will decrease kmer coverage). Performance will depend on the nature of the organellar genome. Complex samples with lots of different genomes, or repeat patterns, will lead to breaks in the assembly. This can create a lot of manual work trying to piece the organellar genome together. An alternative read mapping stream to call organellar variant positions could be implimented in later versions of the workflow to work around assembly issues.
 
-Providing organellar assembly was successful, the genomes are aligned using XXX (ref) and phylogenetic analysis is performed using RAxML (Stamatakis et al. 2014).
+Providing organellar assembly was successful, the genomes are aligned using XXX (ref) and phylogenetic analysis is performed using RAxML (Stamatakis et al. 2014). Basic population statistics are also performed using PopGenome (Pfeifer et al. 2014).
 
 ### Read mapping to nuclear genome and VCF compilation
+The trimmed reads are mapped to the reference genome using end-to-end more in bowtie2 (Langmead and Salzberg 2012); an alternative version of the workflow is being developed to input long read data. A single bowtie2 parameter is specified by the user, which indicates a cutoff in percent divergence to map to the reference genome. For phylogenetic work mapping across multiple species, this parameter should be set high (perhaps as high as 20% divergence or more, depending on how distantly related the species are expected to be), for population level work, this parameter should be set low (2-5% divergence). The % divergence is approximate because the bowtie2 parameter being set is dynamic, since it factors in read quality information (poor base calls count less towards whether the read is mapped or not). Please refer to the bowtie2 manual to see exactly how mapping scores are calculated.
+
+The workflow will loop through mapping through all the samples. It will also convert the resulting SAM files to BAM using samtools (Li et al. 2009), and sort the files for compilation using bcftools (Danacek et al. 2021). At this point, a clever one liner a colleagued pointed out to me is used to call variant positions across samples on a contig by contig basis. This allows the workflow to compile VCF files in parallel (multiple contigs at the same time, rather than one by one), which frees up what was orignally a significant chokepoint in the workflow. Once VCF files are compiled for all the contigs, they are merged into a single VCF, and all the temporary files are deleted.
+
+The VCF file at this point represents the raw dataset. The workflow will generate several figures to help evaluate QC of the raw VCF file. The raw VCF is then filtered according to user specified criteria using a combination of bcftools (Danacek et al. 2021) and vcftools (Danacek et al. 2011). I have provided some guidance on how to set filtering parameters in the [Uncertainty](#uncertainty) section below. The workflow is divided into two streams, one with a minor allele frequency filter applied (justified in the Uncertainty section), the other without. Another set of QC figures are produced for each stream, and should be carefully studied and compared to the raw vcfQC files. These vcf files represent checkpoints with accompanying fasta files retained for the user.
+
+A final filter is applied for linkage disequilibrium. This too represents a checkpoint where a new vcf and fasta file is created. Several analyses are conducted on the various vcf files produced.
 
 ### Phylogenetic and population genomic analyses
 
@@ -174,6 +181,8 @@ The workflow is meant to automate and dampen learning curves as much as possible
 
 **max_missing=0.9** # This value represents the proportion of present data needed to keep a SNP site, so 0.9=10% missingness. You can thank vcftools for that backwards logic. There is no clear threshold for how much missing data should be tolerated before a site is tossed. As with all these parameters, it's a balance between data retention and confidence in that data. My gut feeling is that 20% (0.8) is an acceptable value, but the user should probably explore several thresholds to see what impact, if any, this has on results.
 
+**plink_r2=0.15 and plink_window_size=25 # in kb** # Filtering for linkage disequilibrium is a key assumption when evaluating population structure or phylogenetic signal. Linked positions might lead to an uneven distribution of phylogenetic signal across the genome, with accelerated evolution in some areas of the genome leading to "spikes" in signal; pruning for linked sites is a way of evening the playing field, and not interpreting non-random evolutionary events (such as selective forces) for random ones (like population structure that accumulates over time through random mutations and genetic drift). Interpreting that "random" signal is crucial for making inferences about population history, because it is shaped by things like population expansion or bottlenecks. Setting an r2 value (i.e. how correlated sites must be to be pruned) is not straightforward, and neither is the window size. The best approach is to plot the decay in linkage disequilibiurm using PopLDdecay (https://github.com/BGI-shenzhen/PopLDdecay), and use this to inform the choices made here. Implimenting LDdecay plots remains a priority for the workflow.
+
 ## Acknowledgements
 All the inspirational students, postdocs, mentors, and forum junkies across the globe who contributed to my own learning journey in bioinformatics, of which this workflow is a direct result.
 
@@ -188,9 +197,21 @@ Mermaid wofkflow diagram: https://mermaid.live/
 
 **Citations for programs:**
 
+Danacek, P., Auton, A., Goncalo, A., Albers, C. A., Banks, E., DePristo, M. A., Handsaker, R., Lunter, G., Marth, G., Sherry, S. T., McVean, G., Durbin, R. & 1000 Genomes Project Analysis Group. (2011). The variant call format and VCFtools. Bioinformatics 27: 2156-8. http://vcftools.sourceforge.net/
+
+Danacek, P., Bonfield, J. K., Liddle, J., Marshall, J., Ohan, V., Pollard, M. O., Whitwham. A., Keane, T., McCarthy, S. A., Davies, R. M., & Li, H. (2021). Twelve years of SAMtools and BCFtools. Gigascience, 10, giab008. https://github.com/samtools/bcftools.
+
 Dierckxsens, N., Mardulyn, P., & Smits, G. (2017). NOVOPlasty: de novo assembly of organelle genomes from whole genome data. Nucleic Acids Research, 45, e18. https://github.com/ndierckx/NOVOPlasty
 
+Langmead, B., & Salzberg, S. L. (2012). Fast gapped-read alignment with Bowtie 2. Nature Methods, 9, 357-9. http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
+
+Li, H., Handsaker, B., Wysoker, A., Fennell, T., Ruan, J., Homer, N., Marth, G., Abecasis, G., Durbin, R., & 1000 Genome Project Data Processing Subgroup. (2009). The sequence alignment/map format and SAMtools. Bioinformatics 25: 2078-9. http://www.htslib.org/
+
+Pfeifer, B., Wittelsbürger, U., Ramos-Onsins, S. E., & Lercher, M. J. (2014). PopGenome: An efficient swiss army knife for population genomic analyses in R. Molecular Biology and Evolution, 31, 1929-1936.https://cran.r-project.org/web/packages/PopGenome/index.html
+
 Stamatakis, A. (2014). RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies. Bioinformatics, 30, 1312-3. https://cme.h-its.org/exelixis/web/software/raxml/
+
+
 
 ## Workflow diagram
 ![Workflow_mermaid](https://user-images.githubusercontent.com/79611349/158207461-b82bde6c-e6e2-4b1d-92a2-6e225bf78519.jpg)
