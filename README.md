@@ -40,7 +40,7 @@ The age of DNA barcoding has transformed the field of biology, revealing remarka
 
 
 ## Contents
-The workflow is currently contained in a slurm script, which is specific to queing jobs in shared high performance computing environments. The command lines can, however, be run on a linux-based private server.
+The workflow is currently contained in a slurm script, which is submitted to a shared high performance computing environment for job queueing. The command lines can, however, be run on a linux-based private server.
 
 Several directories are also provided to manage files during the run. The script should be run from the root folder. The R scripts leverage the "Here" package, which swaps in your system file paths so as to avoid hang ups on novel systems. The various folder pathways have various purposes, such as store workflow scripts, hold temporary folders, final output for various analyses, ect. Details are provided below.
 
