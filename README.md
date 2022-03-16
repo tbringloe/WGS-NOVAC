@@ -36,7 +36,7 @@ The age of DNA barcoding has transformed the field of biology, revealing remarka
 
 
 ## Status
-**In-development**; once the basic workflow is working, projected enhancements will include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; improvements to analyses, circumventing caveats of VCF; create a read mapping stream to call organellar variant positions, to potentially circumvent assembly issues; stream for long read data input; incorporate LDdecay plots to inform plink parameter decisions; add reference genome assembly workflow; add relatedness statistics with heatmap plot output.
+**In-development**; once the basic workflow is working, projected enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; improvements to analyses, circumventing caveats of VCF; create a read mapping stream to call organellar variant positions, to potentially circumvent assembly issues; stream for long read data input; incorporate LDdecay plots to inform plink parameter decisions; add reference genome assembly workflow; add relatedness statistics with heatmap plot output.
 
 
 ## Contents
