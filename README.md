@@ -81,6 +81,7 @@ reference_genome=alaria_v3.fasta
 repeat_regions=taxa_hardmask.bed # optional file to specify repeat regions to exclude from VCF file
 mito_seed=Alaria_COI.fasta
 plastid_seed=Alaria_rbcL.fasta
+ploidy=2 # specify ploidy of the read datasets for the mpileup step of the nuclear variant positions; if the dataset is a mix of haploid and diploid individuals, you will need to specify this manually in the samples_list file used at the bcftools mpileup step
 
 ##User inputs settings for NOVOPlasty
 Number_reads_to_extract=5000000 #because organellar genomes are typically high copy, we need a fraction of total read data. Try specifying more reads if genome does not assemble as a circular contig
@@ -166,6 +167,7 @@ A lot of analyses that use vcf as input assume sites without a variant position 
 
 The quality and reliability of the workflow inherently depends on the quality of the reference genome. The user should ensure the reference genome is as clean as possible from non-target taxa (otherwise you could potentially call SNPs in the non-target taxa, assuming they are present in all samples fed into the workflow). I suggest a blobtools (https://github.com/DRL/blobtools) approach to assessing the purity of the reference genome, and to use coverage, GC content, and taxonomic information to filter non-target contigs. Generating a solid reference genome is a logistical challenge in-and-of itself. I have colleagues with fantastic workflows for genome assembly, and I will attempt to stich those workflows into this one in future enhancements.
 
+The workflow assumes a consistent ploidy level across all individuals. If this is not the case (i.e. datasets are a mixture of haploid and diploid individuals), this must be specified in the sample_list file used by bcftools at the mpileup step of the workflow. This cannot be automated, so the user will have to add ploidy manually to the file as a second tab-delimited column.
 
 ## Uncertainty
 The workflow has been tested using the exact versions in the above dependencies. No effort has been made to test other versions, or enhance compatibility of dependencies (modules are purged and loaded as needed). This needs to be managed, and is an area of active work (e.g. exploring bringing workflow into snakemake). I cannot guarantee the command line arguments will work with different versions of the above programs (in some cases, such as bcftools, I can confirm they won't). Be wary using different versions with unknown behavior, particularly for the variant filtering procedures.
