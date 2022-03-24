@@ -169,6 +169,8 @@ The quality and reliability of the workflow inherently depends on the quality of
 
 The workflow assumes a consistent ploidy level across all individuals. If this is not the case (i.e. datasets are a mixture of haploid and diploid individuals), this must be specified in the sample_list file used by bcftools at the mpileup step of the workflow. This cannot be automated, so the user will have to add ploidy manually to the file as a second tab-delimited column.
 
+The workflow also assumes individuals are not related. If they are, this has critical implications for population genomic analyses. I heatmap of relatedness is among the future additions to the workflow to help users evaluate this aspect of their datasets.
+
 ## Uncertainty
 The workflow has been tested using the exact versions in the above dependencies. No effort has been made to test other versions, or enhance compatibility of dependencies (modules are purged and loaded as needed). This needs to be managed, and is an area of active work (e.g. exploring bringing workflow into snakemake). I cannot guarantee the command line arguments will work with different versions of the above programs (in some cases, such as bcftools, I can confirm they won't). Be wary using different versions with unknown behavior, particularly for the variant filtering procedures.
 
