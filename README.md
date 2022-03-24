@@ -200,6 +200,8 @@ All the inspirational students, postdocs, mentors, and forum junkies across the 
 
 Scripts provided by joanam: https://github.com/speciationgenomics/scripts
 
+Scripts for xmfa to fasta conversion by kjolley: https://github.com/kjolley/seq_scripts
+
 Very useful guide for filtering and visualizing SNPs (from which some of this workflow is derived): https://speciationgenomics.github.io/filtering_vcfs/ 
 
 Mermaid wofkflow diagram: https://mermaid.live/
