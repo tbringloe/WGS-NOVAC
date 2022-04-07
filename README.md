@@ -234,7 +234,7 @@ Stamatakis, A. (2014). RAxML version 8: a tool for phylogenetic analysis and pos
 
 
 ## Workflow diagrams
-
+## rganellar workflow
 ![Workflow_organellar_v2](https://user-images.githubusercontent.com/79611349/162233966-e421dccf-93b6-4ca9-ad8c-581f22ffe743.jpg)
-
+## uclear workflow
 ![Workflow_nuclear_v2](https://user-images.githubusercontent.com/79611349/162234013-3d141c60-f267-4e48-b4e7-04471024e9bd.jpg)
