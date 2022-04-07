@@ -233,6 +233,8 @@ Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A. R., Bender, 
 Stamatakis, A. (2014). RAxML version 8: a tool for phylogenetic analysis and post-analysis of large phylogenies. Bioinformatics, 30, 1312-3. https://cme.h-its.org/exelixis/web/software/raxml/
 
 
-## Workflow diagram
-![Workflow_mermaid](https://user-images.githubusercontent.com/79611349/158207461-b82bde6c-e6e2-4b1d-92a2-6e225bf78519.jpg)
+## Workflow diagrams
 
+![Workflow_organellar_v2](https://user-images.githubusercontent.com/79611349/162233966-e421dccf-93b6-4ca9-ad8c-581f22ffe743.jpg)
+
+![Workflow_nuclear_v2](https://user-images.githubusercontent.com/79611349/162234013-3d141c60-f267-4e48-b4e7-04471024e9bd.jpg)
