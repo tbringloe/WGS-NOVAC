@@ -91,7 +91,7 @@ Make sure you put reference genomes in the reference_genome folder, and seed fil
 Make sure you specify user input variables in the NOVAC_master_30iii22.txt file
 Make sure you configure the read files to match sample IDs in sample.list, following this format: 01_SampleID_Pop/Species_1/2.fq.gz; make sure specimens are in a logical order, grouped by populations, in an order that is meaninful for figures.
 Make sure you provide a list of sample IDs in sample.list. A quick way to do this is to move to the read_files folder then type 'ls *_1.fq.gz > sample.list', then 'sed -i 's/_1.fq.gz//' sample.list'. That will remove suffixes from the list. Use 'nano sample.list' to ensure sample IDs are correct (##_SampleID_Pop/species), then move sample.list back to root working space folder where you will launch the job
-Once the above steps are completed run the workflow from the root workspace directory by typing the following command in the terminal: sbatch NOVAC_master_24iii22.txt
+Once the above steps are completed run the workflow from the root workspace directory by typing the following command in the terminal: sbatch NOVAC_master_24iii22.slurm
 
 Remember other useful commands for monitoring your job
 
