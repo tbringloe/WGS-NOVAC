@@ -1,0 +1,5 @@
+begin SplitsTree;
+EXECUTE FILE=vcf/REPLACE_noMAFapplied.recode.min4.splitstree.nexus;
+EXPORTGRAPHICS format=JPG file=results/splitstree/REPLACE_noMAFapplied.jpg
+QUIT;
+end;
