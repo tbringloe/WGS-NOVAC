@@ -4,7 +4,7 @@ library(tidyverse)
 library(here)
 #load eigenvec values
 pca <- read_table2(file.path(here::here(), "vcf_analyses/plink/", "FILE.eigenvec"), col_names = FALSE)
-POP_SPEC <- stringr::str_split(read_file(file.path(here::here(), "vcf_analyses/admixture/pop-species.list")), pattern = ",")[[1]]
+POP_SPEC <- stringr::str_split(read_file(file.path(here::here(), "vcf_analyses/admixture/pop-species.4.list")), pattern = ",")[[1]]
 eigenval <- scan(file.path(here::here(), "vcf_analyses/plink/", "FILE.eigenval"))
 #tidy up pca data
 pca <- pca[,-1]
@@ -21,7 +21,7 @@ pve <- data.frame(PC = 1:20, pve = eigenval/sum(eigenval)*100)
 #plot to visualise variance explained by vector
 a <- ggplot(pve, aes(PC, pve)) + geom_bar(stat="identity")
 #create vector image
-pdf(file=file.path(here::here(), "vcf_analyses/", "FILE_PCA_vectors.pdf"))
+pdf(file=file.path(here::here(), "results/pca/", "FILE_PCA_vectors.pdf"))
 #insert ggplot code
 a + ylab("Percentage variance explained") + theme_light()
 dev.off()
