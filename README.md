@@ -36,7 +36,7 @@ The age of DNA barcoding has transformed the field of biology, revealing remarka
 
 
 ## Status
-**In-development**; once the basic workflow is working, projected enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; improvements to analyses, circumventing caveats of VCF; create a read mapping stream to call organellar variant positions, to potentially circumvent assembly issues; stream for long read data input; incorporate LDdecay plots to inform plink parameter decisions; add reference genome assembly workflow; add relatedness statistics with heatmap plot output.
+**In-development**; the basic workflow is working. Future enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; corrections for missingness (i.e. genetic distances and nucleotide diveristy); stream for long read data input; incorporate LD decay plots to inform plink parameter decisions; add reference genome assembly workflow.
 
 
 ## Contents
@@ -45,40 +45,34 @@ The workflow is currently contained in a slurm script, which is submitted to a s
 Several directories are also provided to manage files during the run. The script should be run from the root folder. The R scripts leverage the "Here" package, which swaps in your system file paths so as to avoid hang ups on novel systems. The various folder pathways have various purposes, such as store workflow scripts, hold temporary folders, final output for various analyses, ect. Details are provided below.
 
 ### Provided files
-**IDX/**-index folder for the reference genome, used by bowtie2 for mapping reads.
+**01-07.XXX.R** - these are R scripts used by the workflow to plot results
 
-**NOVOPlasty/** - contains subfolders and NOVOPlasty perl script that assemble organellar genomes (not my script, see dependencies below). The main workflow script will create new subfolders within the relevant folder stream (mito or plastid) to store input and output files for individual sample assemblies.
+**READme.txt** - contains important instructions regarding how to setup the environment prior to analysis
 
-**R_code/** - contains several R scripts that generate plots at various workflow checkpoints. These include vcfQC scripts, which plot aspects of the raw and filtered VCF files the user should scrutinize for quality control purposes, including distributions in quality score, read depth/site and /individual, missingness/site and /individual, minor allele frequencies, and heterozygosity. R scripts are also provided to plot admixture (provided by GitHub user joanam; speciationgenomics/scripts) and PCA results.
+**config_mito.txt & config_plastid.txt** - these are modified config files used by NOVOPlasty for de novo organellar genome assembly
 
-**read_files/** - read files are deposited in read_files/raw.
+**TAXA_BLOCK** - a template used to modify nexus files before analysis by splitstree (if the user is using this option)
 
-**reference_genome/** - a reference genome is stored here
+**to_exe_XXX** - configuration files also used by splitstree if the user is running this in the HPC environment
 
-**sorted_bam/** - sorted BAM files are stored here during the workflow
-
-**tmp/** - some temporary files are stored here during the workflow before being deleted
-
-**vcf/** - final vcf files are stored here
-
-**vcf_analyses/** - contains several subfolders where analytical output is stored
-
-**WGS_NOVAC_14iii22.slurm** - the main workflow slurm script submitted via sbatch in an HPC environment
+**WGS_NOVAC_20iv22.slurm** - the main workflow slurm script submitted via sbatch in an HPC environment
 
 
 ## Methods
-The workflow automates the compilation of variant positions across genomic compartments, leveraging preexisting programs. The user must open the slurm script and establish all the variable settings outlined at the beginning of the workflow. The HPC job should also be configured to match some of these setting, i.e. number of threads requested. A modest amount of memory should also be requested depending on the scale of the datasets, and can be increased if memory runs out and the job is killed.
+The workflow automates the compilation of variant positions across genomic compartments, leveraging preexisting programs. The user must open the slurm script and establish all the variable settings outlined at the beginning of the workflow. The HPC job should also be configured to match some of these setting, i.e. number of threads requested. A modest amount of memory should also be requested depending on the scale of the datasets, and can be increased if memory runs out and the job is killed. Below are example inputs that appear at the beginning of the slurm script.
 
 ```
 ################################################User inputs#############################################################
-##Number of threads for analysis
-threads=1 #be sure to specify this in the slurm script
-EXAMPLE_SAMPLE=AT002 #put an example sample name here for compilation step (uses this sample to extract contig names)
-FILE=AE_test #an informative prefix to carry through analyses
+##General information for running workflow
+threads=32 #be sure to specify this in the slurm script
+EXAMPLE_SAMPLE=01_HP-9_HalibutPoint #put an example sample name here for nuclear variant compilation step (uses this sample to extract contig names)
+FILE=GoA_test #an informative prefix to carry through analyses
 
 ##User inputs following file settings
-reference_genome=alaria_v3.fasta
-repeat_regions=taxa_hardmask.bed # optional file to specify repeat regions to exclude from VCF file
+reference_nuclear_genome=alaria_v3.fasta
+reference_mitochondrial_genome=Alaria_marginata_HP-3_M_GoA.fasta
+reference_chloroplast_genome=Alaria_marginata_HP-3_P_GoA.fasta
+repeat_regions=Alaria_repeats.bed # optional file to specify repeat regions to exclude from VCF file
 mito_seed=Alaria_COI.fasta
 plastid_seed=Alaria_rbcL.fasta
 ploidy=2 # specify ploidy of the read datasets for the mpileup step of the nuclear variant positions; if the dataset is a mix of haploid and diploid individuals, you will need to specify this manually in the samples_list file used at the bcftools mpileup step
@@ -98,9 +92,11 @@ Average_quality=20
 Min_length=75
 
 ##Mapping parameters for bowtie2; 0.6=up to 10% divergence in mapping high quality reads in end-to-end mode, 0.3=up to 5%, 0.12=up to 2%; bowtie2 manual states minimum-score function f to f(x) = 0 + -0.6 * x, where x is read length.
-map_param=0.3
+map_param_nuc=0.6
+map_param_mito=0.3
+map_param_chloro=0.12
 
-##User inputs following filtering settings for compiling VCF file
+##User inputs following filtering settings for compiling nuclear VCF file
 min_cov=15
 max_cov=100
 allelic_balance_low=0.2
@@ -110,28 +106,32 @@ min_Q=30 #follows phred scale, 30=1/1000 chance of SNP calling error
 max_missing=0.9 # value is proportion of present data needed to keep a SNP site, so 0.9=10% missingness
 
 ##User specifies following parameters for removal of linked SNPs using PLINK
-plink_r2=0.15
+plink_r2=0.25
 plink_window_size=25 #in kb
 
 ##User specifies values of k for ADMIXTURE analysis
 k_low=2
 k_high=3
-pops=Arctic,Atlantic,Greenland1,Greenland2,Faroe_Islands,Norway,Ireland #here, list populations in order they should appear in admixture plot, seperated by a comma
+pops=HalibutPoint,KayakBeach #here, list populations in order they should appear in admixture plot, seperated by a comma
+
+##User specifies the window and step sizes in bp for vcftools pop gen analyses
+window=50000 # in bp; it is recommended to set this high; vcftools will output results for windows with variant(s) present, upward biasing estimates due to excluded 0 value windows. Setting a larger window will minimize this bias.
+step_size=5000 # in bp
 ```
 
-Once the user is happy with these choices, the slurm script must be submitted to an HPC server. Alternatively, the individual line codes can be run on a private, linux-based server. If the user wants to run specific sections, avoid rerunning, or remove particular commmands from the script, they can put a # at the beginning of relevant lines, or delete altogether (providing they are not necessary).
+Once the user is happy with these choices, the slurm script must be submitted to an HPC server. Alternatively, the individual line codes can be run on a private, linux-based server. If the user wants to run specific sections, avoid rerunning, or remove particular commmands from the script, they can put a # at the beginning of relevant lines, or delete altogether (providing they are not necessary). It is recommended to break up the job, running computationally intensive portions (calling variant positions) with many threads before running seperate jobs for the analyses (which generally do not use multiple threads).
 
 ```
-sbatch WGS_NOVAC_14iii22.slurm
+sbatch WGS_NOVAC_20iv22.slurm
 ```
 
 The workflow, in terms of the methods leveraged, are described here. For further details on methodology and benchmarking of the specific programs used, see [References](#references), which include links to GitHub/webpages.
 ### Raw read QC and organellar assembly
 The user must first provide a single column text file called sample.list in the workflow root directory containing the sample IDs (i.e. 01_SampleID_Pop/Species) used as the prefix in the fastq files.
 
-The pipeline starts by performing fastqc/multiqc on the raw read files. The files are then trimmed according to user specified criteria. Fastqc and multiqc are performed again on the trimmed reads, and should be checked over and compared to the raw QC output. Once the reads are trimmed, the workflow will move onto organellar assembly using NOVOPlasty (Dierckxsens et al. 2017), which extends a user provided seed sequence based on coverage (i.e. high frequency kmers are used to extend the seed), until the assembled genome begins to overlap, confirming circularity. Seperate folders and configuration files are created for each sample. Carefully check over the final contig(s), if the assembly is not complete, this can potentially be improved two ways: 1) specify more reads to subsample for organellar assembly (improving coverage), or 2) specify a higher Kmer value, which may help bridge breaks in the assembly (you might have to increase the number of subreads as this will decrease kmer coverage). Performance will depend on the nature of the organellar genome. Complex samples with lots of different genomes, or repeat patterns, will lead to breaks in the assembly. This can create a lot of manual work trying to piece the organellar genome together. An alternative read mapping stream to call organellar variant positions could be implimented in later versions of the workflow to work around assembly issues.
+The pipeline starts by performing fastqc/multiqc on the raw read files. The files are then trimmed according to user specified criteria. Fastqc and multiqc are performed again on the trimmed reads, and should be checked over and compared to the raw QC output. Once the reads are trimmed, the workflow will move onto organellar variant calling using a read mapping approach, but the user can also optionally specify de novo assembly using NOVOPlasty (Dierckxsens et al. 2017); this program extends a user provided seed sequence based on coverage (i.e. high frequency kmers are used to extend the seed), until the assembled genome begins to overlap, confirming circularity. Seperate folders and configuration files are created for each sample. Carefully check over the final contig(s), if the assembly is not complete, this can potentially be improved two ways: 1) specify more reads to subsample for organellar assembly (improving coverage), or 2) specify a higher Kmer value, which may help bridge breaks in the assembly (you might have to increase the number of subreads as this will decrease kmer coverage). Performance will depend on the nature of the organellar genome. Complex samples with lots of different genomes, or repeat patterns, will lead to breaks in the assembly. This can create a lot of manual work trying to piece the organellar genome together. The former option (mapping approach) is suggested for downstream analyses, the latter (de novo assembly) is suggested for publishing organellar genomes.
 
-Providing organellar assembly was successful, the genomes are aligned using XXX (ref) and phylogenetic analysis is performed using RAxML (Stamatakis et al. 2014). Basic population statistics are also performed using PopGenome (Pfeifer et al. 2014).
+Providing organellar assembly was successful, the genomes can be aligned using MAUVE (Darling et al. 2004). Phylogenetic analyses are performed using the read mapping results, and using RAxML (Stamatakis et al. 2014). Basic population statistics are also performed on the read mapping results, using PopGenome (Pfeifer et al. 2014).
 
 ### Read mapping to nuclear genome and VCF compilation
 The trimmed reads are mapped to the reference genome using end-to-end mode in bowtie2 (Langmead and Salzberg 2012); an alternative version of the workflow is being developed to input long read data. A single bowtie2 parameter is specified by the user, which indicates a cutoff in percent divergence to map to the reference genome. For phylogenetic work mapping across multiple species, this parameter should be set high (perhaps as high as 20% divergence or more, depending on how distantly related the species are expected to be relative to the reference genome), for population level work, this parameter should be set low (2-5% divergence). The % divergence is approximate because the bowtie2 parameter being set is dynamic, since it factors in read quality information (poor base calls count less towards whether the read is mapped or not). Please refer to the bowtie2 manual to see exactly how mapping scores are calculated.
@@ -143,9 +143,9 @@ The VCF file at this point represents the raw dataset. The workflow will generat
 A final filter is applied for linkage disequilibrium using Plink (Purcell et al. 2007). This too represents a checkpoint where a new vcf and fasta file is created. Several analyses are conducted on the various vcf files produced.
 
 ### Phylogenetic and population genomic analyses
-Basic population statisitics are performed on the VCF file not filtered for minor allele frequency. The statistics are performed through vcftools (Danacek et al. 2011), and include the use of a sliding window to calculate nucleotide diversity (pi), and Tajima's D. Inbreeding coefficients (heterozygosity) is also calculated for all individuals. If the analysis is at the species level, this output should be ignored. Phylogenetic analyses are performed on the VCF file filtered for linkage disequilibrium (LD). These analyses include an initial calculation of eigenvectors and eigenvalues using Plink, with a corresponding PCA plotted using R. Admixture analyses (Alexander and Lange 2011) also leverage the Plink output, and an R script plots ancestry proportions for all individuals at the various levels of k specified by the user. A fasta file of the LD pruned dataset is analysed using RAxML to produce ML tree output. Finally, Splitstree (Huson and Bryant 2006) is used to plot uncorrected genomic distances as a network, which can be further scrutinized for shared genomic information across samples (i.e. potential hybridizations).
+Basic population statisitics are performed on the VCF file not filtered for minor allele frequency. The statistics are performed through vcftools (Danacek et al. 2011), and include the use of a sliding window to calculate nucleotide diversity (pi), and Tajima's D. Inbreeding coefficients (heterozygosity) is also calculated for all individuals. If the analysis is at the species level, this output should be ignored. Phylogenetic analyses are performed on the VCF file filtered for linkage disequilibrium (LD). These analyses include an initial calculation of eigenvectors and eigenvalues using Plink, with a corresponding PCA plotted using R. Admixture analyses (Alexander and Lange 2011) also leverage the Plink output, and an R script plots ancestry proportions for all individuals at the various levels of k specified by the user. A fasta file of the LD pruned dataset is analysed using RAxML to produce ML tree output. 
 
-Optimization of plot output and additional analyses to be added to the workflow are under development.
+Splitstree (Huson and Bryant 2006) can be used to plot uncorrected genomic distances as a network, which can be further scrutinized for shared genomic information across samples (i.e. potential hybridizations). As the program requires a GPU, it is recommended to run this on a standard computer.
 
 ## Requirements
 **Data: paired-end short read data with the following formatting: 01-SampleID_Population/species_1/2.fq.gz, 02_SampleID_Population/species_1/2.fq.gz, 03_SampleID_Population/species_1/2.fq.gz...;** it is critical the order of the samples follows the order you wish specimens to appear in the admixture plots, that is, grouped meaningfully by population or species. The naming format allows the workflow to derive species/population metadata, which is leveraged in some of the analyses.
@@ -158,9 +158,13 @@ Optimization of plot output and additional analyses to be added to the workflow 
 
 **Program dependencies:** fastqc v0.11.9, multiQC v1.9, trimmomatic v0.39, NOVOPlasty v4.2, seqtk v1.3, perl v.5.34.0, bowtie2 v2.4.2, samtools v1.13, bcftools v1.12, vcftools v0.1.16, r v4.0.4, admixture v1.3.0, plink v2.00, python v3.9.5, 
 
-**R packages:** Here, tidyverse, rprojroot, ggplot2, optparse, PopGenome
+**R packages:** Here, tidyverse, rprojroot, ggplot2, optparse, PopGenome, gplots
 
 ## Caveats
+The fasta files of the organellar sequences based on read mapping **should not** be published. Missing data will be treated as the reference allele, leading to errors in the sequence (these are accepted for downstream analysis, as mapping allows for efficient alignment of variant positions). De novo assembled genomes should be considered for publication purposes.
+
+Nucleotide diversity and genetic distances in the nuclear datasets are severely biased at the moment because missing data is improperly treated as the reference allele by vcftools. VCF files with invariant position data should be used to calculate nucleotide diversity and genetic distances using Pixy (Korunes and Samuk 2021). This is a top priority enhancement at the moment, but one not yet implimented.
+
 I find standard practices and justifications for filtering parameters related to nuclear wide variants basically intractable. Some make sense, like having decent read depth, but others, such as minor allele frequency, appear to be born out of an adundance of caution, and may not be justifiable from a biological perspective. See my thoughts below with specific parameters in the Uncertainty section. Because these decisions are individualized across datasets, some results are not directly comparable across analyses. As in, one cannot explicitly compare results A with results B; ideally, the two datasets must be analysed together, under the same conditions, as a single workflow. For instance, exact values of inbreeding coefficients cannot (and should not) be forwarded as an objective truth comparable to other measures, since those values depend, in part, on the filtering choices made. They are informative for comparing one species or population relative to another within the dataset. Results should always be interpreted within the context of the data analysed and decisions made during that process.
 
 A lot of analyses that use vcf as input assume sites without a variant position called represent the allele of the reference genome. This is a limitation born out of trying to efficiently store genomic information across samples (assumptions are made so information on all positions does not need to be stored or analysed). This has important downstream implications, however, which the community has yet to fully come to grips with. Consider all the meaninful biological data that is tossed in an effort to curate the vcf datasets to ensure no artifacts are present. You are not simply tossing that data, you are actually changing those sites back to the reference allele. This is why filtering decisions have such an important impact on vcf datasets, and why no two vcf files are directly comparable (even if samples were mapped to the same reference genome). It's an unfortunate limitation, but until we can efficiently store the full genomes, or somehow incorporate uncertainty without recording this as the reference allele, we are stuck. There is a great paper that tries to fix this, but I need to track it down. I will add here later.
@@ -169,7 +173,7 @@ The quality and reliability of the workflow inherently depends on the quality of
 
 The workflow assumes a consistent ploidy level across all individuals. If this is not the case (i.e. datasets are a mixture of haploid and diploid individuals), this must be specified in the sample_list file used by bcftools at the mpileup step of the workflow. This cannot be automated, so the user will have to add ploidy manually to the file as a second tab-delimited column.
 
-The workflow also assumes individuals are not related. If they are, this has critical implications for population genomic analyses. I heatmap of relatedness is among the future additions to the workflow to help users evaluate this aspect of their datasets.
+The workflow also assumes individuals are not related. If they are, this has critical implications for population genomic analyses. I heatmap of relatedness is among the future additions to the workflow to help users evaluate this aspect of their datasets. Note, the relatedness graphs need to be corrected to analyse individuals within population, rather than across. The current workflow biases values towards higher relatedness by considering all the populations together.
 
 ## Uncertainty
 The workflow has been tested using the exact versions in the above dependencies. No effort has been made to test other versions, or enhance compatibility of dependencies (modules are purged and loaded as needed). This needs to be managed, and is an area of active work (e.g. exploring bringing workflow into snakemake). I cannot guarantee the command line arguments will work with different versions of the above programs (in some cases, such as bcftools, I can confirm they won't). Be wary using different versions with unknown behavior, particularly for the variant filtering procedures.
@@ -218,9 +222,13 @@ Danacek, P., Auton, A., Goncalo, A., Albers, C. A., Banks, E., DePristo, M. A., 
 
 Danacek, P., Bonfield, J. K., Liddle, J., Marshall, J., Ohan, V., Pollard, M. O., Whitwham. A., Keane, T., McCarthy, S. A., Davies, R. M., & Li, H. (2021). Twelve years of SAMtools and BCFtools. Gigascience, 10, giab008. https://github.com/samtools/bcftools.
 
+Darling A. C., Mau B., Blattner F. R., Perna N.T. 2004. Mauve: multiple alignment of conserved genomic sequence with rearrangements. Genome Research 14 :1394-1403. doi:10.1101/gr.2289704
+
 Dierckxsens, N., Mardulyn, P., & Smits, G. (2017). NOVOPlasty: de novo assembly of organelle genomes from whole genome data. Nucleic Acids Research, 45, e18. https://github.com/ndierckx/NOVOPlasty
 
 Huson, D. H., & Bryant, D. (2006). Application of phylogenetic networks in evolutionary studies. Molecular Biology and Evolution, 23, 254-67. https://software-ab.informatik.uni-tuebingen.de/download/splitstree4/welcome.html
+
+Korunes, K. L., Samuk, K. (2021). Pixy: unbiased estimation of nucleotide diversity and divergence in the precense of missing data. Molecular Ecology Resources. 21: 1359-1368.
 
 Langmead, B., & Salzberg, S. L. (2012). Fast gapped-read alignment with Bowtie 2. Nature Methods, 9, 357-9. http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
 
