@@ -12,6 +12,7 @@ __Contact:__      e-mail: trevor.bringloe@unimelb.edu.au | tel: (506)-259-2288
 - [Objective](#objective)
 - [Summary](#summary)
 - [Status](#status)
+- [Example results](#example-results)
 - [Contents](#contents)
   + [Provided files](#provided-files)
 - [Methods](#methods)
@@ -34,6 +35,8 @@ This workflow will assemble organellar genomes and call genome-wide nuclear vari
 ## Summary
 The age of DNA barcoding has transformed the field of biology, revealing remarkable levels of cryptic diversity, unexpected phylogeographic distributions, and novel evolutionary insights. Sequencing whole genomes, that is all the genomic information present in a set of specimens/samples, represents the next major step in species detection and inferring evolutionary relationships, yet only a handful of studies have leveraged this approach for these purposes. Steep learning curves and standardization of bioinformatic workflows present major barriers for the uptake of whole genome sequencing. Here, we introduce a workflow that inputs sequence data and a reference genome, and outputs fully assembled mitochondrial and chloroplast genomes (for photosynthetic organisms), and a file of nuclear-wide variant positions across samples (Single Nucleotide Polymorphisms and indels). The workflow operates through the  command-line interface, wherein users specify a set of key parameters related to assembly, read mapping, and quality control for the retention of nuclear variant positions (e.g. min/max coverage, r2 values for linkage disequilibrium, ect). Among the key outputs are organellar and nuclear phylogenies, a phylogenetic network of nuclear variant positions, admixture and PCA plots, and basic population statistics such as levels of diversity and inbreeding coefficients. The workflow has been used to detect 100,000s to 1,000,000s of variant positions in global kelp datasets, several orders of magnitude greater than current sanger sequencing and reduced genomic capture methods (e.g. RADseq). The workflow has revealed species and population level insights, including widespread hybridizations among species, a novel Arctic lineage, and high latitude glacial refugial populations in the North Atlantic. Facilitating the accessibility of bioinformatic workflows will be imperative to the transition to whole genome sequencing in biology, which in turn promises to reveal new species, holobiome associations, and functional insights.
 
+## Example results
+Provided here is an html file that details results from the workflow analysing Gulf of Alaska kelp populations. This is not published work, it is meant to guide user expectations in terms of what the workflow is capable of. Note, some additional analyses (LD plots) are not yet part of the workflow, and figures were modified using inkscape (i.e. this does not represent raw output).
 
 ## Status
 **In-development**; the basic workflow is working. Future enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; corrections for missingness (i.e. genetic distances and nucleotide diveristy); stream for long read data input; incorporate LD decay plots to inform plink parameter decisions; add reference genome assembly workflow.
