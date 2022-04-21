@@ -39,7 +39,7 @@ The age of DNA barcoding has transformed the field of biology, revealing remarka
 Among the provided files is an html that details results from the workflow analysing Gulf of Alaska kelp populations. This is not published work, it is meant to guide user expectations in terms of what the workflow is capable of. Note, some additional analyses (LD plots) are not yet part of the workflow, and figures were modified using inkscape (i.e. this does not represent raw output).
 
 ## Status
-**In-development**; the basic workflow is working. Future enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; corrections for missingness (i.e. genetic distances and nucleotide diveristy); stream for long read data input; incorporate LD decay plots to inform plink parameter decisions; add reference genome assembly workflow.
+**In-development**; the basic workflow is working, but the user is still expected to have enough expertise to troubleshoot and customize the workflow for their own datasets. Future enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; corrections for missingness (i.e. genetic distances and nucleotide diveristy); stream for long read data input; incorporate LD decay plots to inform plink parameter decisions; add reference genome assembly workflow.
 
 
 ## Contents
@@ -60,7 +60,7 @@ Several directories are also provided to manage files during the run. The script
 
 **WGS_NOVAC_20iv22.slurm** - the main workflow slurm script submitted via sbatch in an HPC environment
 
-**07_Rmarkdown_GoA_prelim_summary_20iv22.html** - example of results produced by the workflow. Not published not peer reviewed
+**07_Rmarkdown_GoA_prelim_summary_20iv22.html** - example of results produced by the workflow. Not published nor peer reviewed
 
 
 ## Methods
