@@ -37,6 +37,7 @@ mkdir results/vcf_QC
 mkdir results/vcf_QC/raw
 mkdir results/vcf_QC/MAFapplied
 mkdir results/vcf_QC/noMAFapplied
+mkdir results/pixy
 mkdir sorted_bam
 mkdir tmp
 mkdir tmp/trimming
