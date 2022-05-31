@@ -40,7 +40,7 @@ Among the provided files is an html that details results from the workflow analy
 
 ## Status
 **In-development**
-**added May 26, 2022: new GQ filtering option** The basic workflow is working, but the user is still expected to have enough expertise to troubleshoot and customize the workflow for their own datasets. Future enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; stream for long read data input; incorporate LD decay plots to inform plink parameter decisions; add reference genome assembly workflow; correction for variants mapped to paralogous genes; read filtering option for mapping scores stored in the sam/bam format.
+**added May 26, 2022: new GQ filtering option** The basic workflow is working, but the user is still expected to have enough expertise to troubleshoot and customize the workflow for their own datasets. Future enhancements will potentially include: dependency management, likely by bringing the workflow into snakemake; automated annotation of organellar genomes; phasing of nuclear variant positions; stream for long read data input; incorporate LD decay plots to inform plink parameter decisions; add reference genome assembly workflow; correction for variants mapped to paralogous genes.
 
 
 ## Contents
@@ -155,6 +155,8 @@ Basic population statisitics are performed on the VCF file not filtered for mino
 
 Splitstree (Huson and Bryant 2006) can be used to plot uncorrected genomic distances as a network, which can be further scrutinized for shared genomic information across samples (i.e. potential hybridizations). As the program requires a GPU, it is recommended to run this on a standard computer.
 
+There is optional command strings the user can modify to derive coverage information across genomic regions specified by a bed file(s). This could be useful if the user is interested in whether exons have been lost or expanded in particular genomes.
+
 ## Requirements
 **Data: paired-end short read data with the following formatting: 01-SampleID_Population/species_1/2.fq.gz, 02_SampleID_Population/species_1/2.fq.gz, 03_SampleID_Population/species_1/2.fq.gz...;** it is critical the order of the samples follows the order you wish specimens to appear in the admixture plots, that is, grouped meaningfully by population or species. The naming format allows the workflow to derive species/population metadata, which is leveraged in some of the analyses.
 
@@ -183,7 +185,7 @@ The workflow assumes a consistent ploidy level across all individuals. If this i
 
 The workflow also assumes individuals are not related. If they are, this has critical implications for population genomic analyses. I heatmap of relatedness is among the future additions to the workflow to help users evaluate this aspect of their datasets. Note, the relatedness graphs need to be corrected to analyse individuals within population, rather than across. The current workflow biases values towards higher relatedness by considering all the populations together.
 
-The workflow does not yet correct for variants mapped to paralogous genes, which is expected to artificially boost heterozygosity. For now, user may choose to map to single copy genes as the reference genome. Corrections are currently in development, specifically a filtering step for excess heterozygosity.
+The workflow does not yet correct for variants mapped to paralogous genes, which is expected to artificially boost heterozygosity. For now, user may choose to map to single copy genes as the reference genome. Corrections are currently in development, specifically a filtering step for excess heterozygosity. Command strings are now available to identify regions of gene expansion based on coverage information; if the user identifies putative expanded regions of the genome, these can be filtered using the vcftools --exclude-bed command.
 
 ## Uncertainty
 The workflow has been tested using the exact versions in the above dependencies. No effort has been made to test other versions, or enhance compatibility of dependencies (modules are purged and loaded as needed). This needs to be managed, and is an area of active work (e.g. exploring bringing workflow into snakemake). I cannot guarantee the command line arguments will work with different versions of the above programs (in some cases, such as bcftools, I can confirm they won't). Be wary using different versions with unknown behavior, particularly for the variant filtering procedures.
