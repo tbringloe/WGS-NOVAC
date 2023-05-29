@@ -10,6 +10,7 @@ __Contact:__      e-mail: tbringloe@gmail.com | tel: (506)-259-2288
 
 - [Objective](#objective)
 - [Summary](#summary)
+- [Workflow diagram](#workflow-diagram)
 - [Status](#status)
 - [Contents](#contents)
   + [Provided files](#provided-files)
@@ -33,6 +34,9 @@ This workflow will assemble organellar genomes and call genome-wide nuclear vari
 
 ## Summary
 The age of DNA barcoding has transformed the field of biology, revealing remarkable levels of cryptic diversity, unexpected phylogeographic distributions, and novel evolutionary insights. Sequencing whole genomes, that is all the genomic information present in a set of specimens/samples, represents the next major step in species detection and inferring evolutionary relationships. Here, we refined a preexissting workflow that inputs sequence data and a reference genome, and outputs fully assembled mitochondrial and chloroplast genomes (for photosynthetic organisms), and a file of nuclear-wide variant positions across samples (Single Nucleotide Polymorphisms). The workflow is a bash script with forks for low vs high coverage datasets, and variant only or variant+invariant datasets. Users establish the environment(i.e. executables) and specify variables before launching the script. The workflow will also stop at key steps to ensure user intervention for quality control purposes. Among the key outputs are organellar genomic sequences (assembled in parallel for a set of samples), PCA plots, and admixture results. The workflow has been used to detect 100,000s to 1,000,000s of variant positions in global datasets in mammalian populations, but an be generally applied to any organism. Our forthcoming work shows high correspondence with ddRADseq datasets, but with greater fidelity to detect genetic clusters.
+
+## Workflow diagram
+<img width="395" alt="workflow_diagram_29v23" src="https://github.com/tbringloe/WGS-NOVAC/assets/79611349/fa67bc7e-21d8-4814-912d-44d3ff5ebebc">
 
 ## Status
 **Development and testing completed**
