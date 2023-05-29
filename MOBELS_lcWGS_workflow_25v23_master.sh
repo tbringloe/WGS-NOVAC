@@ -538,6 +538,11 @@ then
 else
   echo skipping vcf filtration
   echo user is satisfied with filtering results, moving onto PCA and admixture analyses
+  echo user should consider adding another filtering step to remove highly heterozygous sites, with example commands provided below
+  echo use populations module of stacks to calculate heterozygosity per site defining all individuals are single population
+  echo populations -V <in>.vcf.gz -M <population_structure>.txt -t <threads> --out-path .
+  echo decide on a threshold for acceptable site heterozygosity and remove sites above threshold
+  echo vcftools --gzvcf <in>.vcf.gz --exclude-positions <heterozygous_sites>.txt --recode --out <out>
 fi
 
 #####Generate PCA plots
