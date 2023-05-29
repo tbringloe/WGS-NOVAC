@@ -1,5 +1,0 @@
-begin SplitsTree;
-EXECUTE FILE=vcf/REPLACE.LD_pruned.min4.splitstree.nexus;
-EXPORTGRAPHICS format=JPG file=results/splitstree/REPLACE_LDpruned.jpg
-QUIT;
-end;
