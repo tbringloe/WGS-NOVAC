@@ -138,7 +138,7 @@ SNPgap=5 # filters genotypes within specified distance (bp) to indels, which are
 max_missing=0.8 # proportion of present data needed to keep a SNP site by vcftools, 0.9=10% missingness
 
 #User inputs for filtering variant positions with high coverage WGS datasets; see https://github.com/tbringloe/WGS-NOVAC for explanations on filtering options; still need a filter for heterozygosity (i.e. duplications mapping to same non-duplicated region of reference genome) 
-min_MQ=30 # minimum mapping quality score used at mpileup step, reads with a mapping quality score less than specified value are not considered, follows phred scale
+min_MQ=3 # !!MAPQ scores differ by mapping program; should be set low for Bowtie2: see http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html; minimum mapping quality score used at mpileup step, reads with a mapping quality score less than specified value are not considered, follows phred scale
 min_BQ=30 # minimum base quality score used at mpileup step, bases with a quality score less than specified value are not considered, follows phred scale
 min_cov=15 # minimum coverage to keep a variant position, should eliminate low confidence calls, though calling at low coverage appears to perform well. Could impact estimates of heterozygous sites
 max_cov=100 # maximum coverage to keep a variant position, should eliminate high copy regions potentially enriched with mapping artifacts
